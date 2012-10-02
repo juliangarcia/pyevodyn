@@ -10,18 +10,19 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 if __name__ == '__main__':        
     setup(
-        name = "pyevolution",
-        version = "0.0.1.1",
+        name = "pyevodyn",
+        version = "0.0.1dev",
         # Package structure
         #
         # find_packages searches through a set of directories 
         # looking for packages
-        packages = find_packages('src', exclude = ['ez_setup',
-            '*.tests', '*.tests.*', 'tests.*', 'tests']),
+        #packages=['pyevolution', 'pyevolution.moran'],
+        packages = find_packages(exclude = ['*.tests', '*.tests.*', 'tests.*', 'tests']),
         
         # package_dir directive maps package names to directories.
         # package_name:package_directory
-        package_dir = {'': 'src'},
+        #THIS LINE HAS BEEN COMMENTED TO GET RID OF SRC
+        #package_dir = {'': 'src'},
         
         # Dependencies
         #
@@ -49,11 +50,10 @@ if __name__ == '__main__':
         # Meta information
         author = "Julian Garcia",
         author_email = "garcia@evolbio.mpg.de",
-        description = ("A tool to study and teach evolutionary dynamics using python."),
+        description = ("PyEvoDyn: A tool to study and teach evolutionary dynamics using python."),
         license = "BSD",
         keywords = "evolution dynamics complex systems",
         url = "http://garciajulian.com",
-        #packages=['pyevolution', 'pyevolution.moran'],
         long_description=read('README'),
         classifiers=[
             "Development Status :: 2 - Pre Alpha",

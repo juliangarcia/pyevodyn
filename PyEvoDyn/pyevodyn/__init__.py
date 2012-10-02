@@ -1,3 +1,3 @@
 """
-Pyevolution is a python package to study and teach evolutionary dynamics.
+PyEvoDyn is a python package to study and teach evolutionary dynamics.
 """
