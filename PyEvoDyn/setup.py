@@ -16,8 +16,8 @@ if __name__ == '__main__':
         #
         # find_packages searches through a set of directories 
         # looking for packages
-        #packages=['pyevolution', 'pyevolution.moran'],
-        packages = find_packages(exclude = ['*.tests', '*.tests.*', 'tests.*', 'tests']),
+        packages=['pyevodyn'],
+        #packages = find_packages(exclude = ['*.tests', '*.tests.*', 'tests.*', 'tests']),
         
         # package_dir directive maps package names to directories.
         # package_name:package_directory
