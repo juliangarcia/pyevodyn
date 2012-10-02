@@ -223,7 +223,7 @@ def stationary_distribution_weak_selection(game_matrix, population_size, intensi
     
     See also:
     --------
-    pyevolution.symblic.stationary_distribution_weak_selection
+    pyevodyn.symblic.stationary_distribution_weak_selection
     This is the numerical approach
 
     Examples

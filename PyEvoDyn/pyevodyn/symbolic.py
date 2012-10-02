@@ -25,7 +25,7 @@ def uniform_mutation_kernel(number_of_strategies,mutation_probability, self_inte
     
     See also:
     ---------
-    Non symbolic equivalent pyevolution.utils.uniform_mutation_kernel
+    Non symbolic equivalent pyevodyn.utils.uniform_mutation_kernel
     
     Examples
     --------
@@ -71,7 +71,7 @@ def submatrix(game, i, j ):
     
     See also:
     ---------
-    Non symbolic equivalent pyevolution.submatrix
+    Non symbolic equivalent pyevodyn.submatrix
     
     Examples
     --------
