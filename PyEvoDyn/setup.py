@@ -1,6 +1,6 @@
 import os
 from setuptools import setup
-from setuptools import find_packages
+#from setuptools import find_packages
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level

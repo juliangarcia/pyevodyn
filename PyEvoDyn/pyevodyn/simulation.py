@@ -6,7 +6,7 @@ Created on Aug 8, 2012
 #TODO: implement simulate fixation probability, test first convergence funcitions separately
 '''
 import numpy as np
-import pyevolution.utils as utils 
+import pyevodyn.utils as utils 
 
 _FITNESS_MAPPING = ['exp', 'lin']
 

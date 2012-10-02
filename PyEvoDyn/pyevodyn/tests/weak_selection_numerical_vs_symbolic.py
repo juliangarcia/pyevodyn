@@ -4,7 +4,7 @@ Created on Sep 28, 2012
 @author: garcia
 '''
 import unittest
-from pyevolution import symbolic, numerical
+from pyevodyn import symbolic, numerical
 from sympy.matrices.matrices import Matrix
 import numpy as np
 

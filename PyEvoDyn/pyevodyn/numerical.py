@@ -6,7 +6,7 @@ Created on Aug 8, 2012
 '''
 import math
 import numpy as np
-import pyevolution.utils as utils
+import pyevodyn.utils as utils
 from operator import itemgetter
 
 
