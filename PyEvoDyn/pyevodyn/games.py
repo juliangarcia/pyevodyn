@@ -37,3 +37,6 @@ def allc_tft_alld_equal_gains(benefit=2.0, cost=1.0,continuation_probability=0.9
     temptation=benefit
     punishment=0.0
     return np.array([[reward,reward,sucker],[reward,reward, sucker*(1.0-continuation_probability)+punishment*continuation_probability],[temptation,temptation*(1.0-continuation_probability)+punishment*continuation_probability, punishment]])
+
+def neutral_game(number_of_strategies):
+    return np.ones(shape=(number_of_strategies, number_of_strategies), dtype=float) 
