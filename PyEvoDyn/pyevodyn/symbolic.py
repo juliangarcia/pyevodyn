@@ -223,6 +223,25 @@ def symbolic_matrix_to_array(symbolic_matrix):
     return ans_array
 
 
+def array_to_symbolic_matrix(array):
+    """
+    Converts a numpy array into sympy.Matrix
+    
+    Parameters
+    ----------
+    np.ndarray
+    
+    Returns
+    -------
+    symbolic_matrix: sympy.Matrix (without symbols)
+    
+    Examples:
+    --------
+    #TODO: examples, TEST
+    """
+    return sympy.Matrix(array.shape[0],array.shape[1], lambda i,j: array[i,j])
+
+
 class NotAFormula(Exception):
     """
     Launched when a pickled expression is not a valid type

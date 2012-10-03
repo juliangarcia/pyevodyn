@@ -7,6 +7,7 @@ Created on Aug 8, 2012
 '''
 import numpy as np
 import pyevodyn.utils as utils 
+from pyevodyn import games
 
 _FITNESS_MAPPING = ['exp', 'lin']
 
@@ -49,6 +50,7 @@ class MoranProcess(object):
         if (mutation_kernel is None and mutation_probability is not None):
             self.mutation_kernel = utils.uniform_mutation_kernel(
                 mutation_probability, self.number_of_strategies)
+        
         self.timestep = 0
         self.game_matrix = game_matrix
         self.intensity_of_selection = intensity_of_selection
@@ -125,6 +127,23 @@ class MoranProcess(object):
                 self.number_of_strategies, self.population_size)
         else:
             self.population_array[incumbent_index] = self.population_size
+    
+    def is_monomorphous(self):
+        """
+        Determines if the population is monomorphous. 
+        
+        Returns
+        -------
+        int: the index of the strategy that in which the population is monomorphous, or None if it is not monomorphous.
+        
+        """
+        max_index = self.population_array.argmax()
+        if self.population_array[max_index] == self.population_size:
+            return max_index
+        return None
+    
+    
+    
         
     
     def simulate_time_series(self, number_of_generations, report_every=1):
@@ -183,3 +202,40 @@ class MoranProcess(object):
             single_estimate=(1.0/samples_per_estimate)*single_estimate
             ans.append(single_estimate)
         return (1.0/number_of_estimates)*np.mean(ans)
+    
+    
+    def simulate_fixation_probability(self, index_of_the_incumbent, index_of_the_mutant, number_of_samples):
+        #temporarily set the mutation kernel to I
+        positives = 0
+        old_mutation_kernel = self.mutation_kernel
+        self.mutation_kernel = np.identity(self.number_of_strategies)
+        
+        poblacion_init = np.zeros(self.number_of_strategies, dtype='int')
+        poblacion_init[index_of_the_incumbent] = self.population_size -1
+        poblacion_init[index_of_the_mutant] = 1
+        
+        for _ in xrange(0,number_of_samples):
+            #reset the population with the incumbant and seed the mutant
+            self.population_array = np.array(poblacion_init)
+            converged_to = self.is_monomorphous()
+            while(converged_to == None):
+                self.step()
+                converged_to = self.is_monomorphous()
+            if(converged_to == index_of_the_mutant):
+                positives+=1
+        #give back kernel
+        self.mutation_kernel = old_mutation_kernel
+        #return
+        return positives/float(number_of_samples)
+    
+
+
+def main():
+    game = games.prisoners_dilemma_equal_gains()
+    mp = MoranProcess(game, population_size=10, intensity_of_selection=0.0, fitness_mapping='exp', mutation_probability=0.001)
+    print mp.simulate_fixation_probability(index_of_the_incumbent=1, index_of_the_mutant=0, number_of_samples=10000)
+    
+    
+    
+if __name__ == "__main__":
+    main()        

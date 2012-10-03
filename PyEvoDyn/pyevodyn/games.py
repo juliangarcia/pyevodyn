@@ -9,6 +9,7 @@ Famous games, symbolic and numeric
 import numpy as np
 
 #TODO: Document
+#TODO: symbolic versions
 
 def prisoners_dilemma(reward=3.0,sucker=0.0,temptation=4.0,punishment=1.0):
     return np.array([[reward,sucker],[temptation,punishment]])
