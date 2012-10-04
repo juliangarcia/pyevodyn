@@ -40,3 +40,11 @@ def allc_tft_alld_equal_gains(benefit=2.0, cost=1.0,continuation_probability=0.9
 
 def neutral_game(number_of_strategies):
     return np.ones(shape=(number_of_strategies, number_of_strategies), dtype=float) 
+
+def two_times_two(a,b,c,d):
+    return np.array([[a,b],[c,d]])
+
+def constant_selection(payoff_a,payoff_b):
+    return np.array([[payoff_a,payoff_a],[payoff_b,payoff_b]])
+
+    

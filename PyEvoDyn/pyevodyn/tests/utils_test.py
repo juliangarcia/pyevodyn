@@ -72,6 +72,30 @@ class TestUtils(unittest.TestCase):
         sample = np.mean(coin_tossing)
         self.assertAlmostEqual(0.5, sample, delta=0.01, msg="Coin tossing test fails " + str(sample) +"  is not 0.5" )
         
+        
+    def test_simulate_discrete_distribution_longer(self):
+        dist = [0.75, 0.2, 1.0-0.2-0.75]
+        zero = 0
+        one =0
+        two =0
+        
+        for _ in xrange(0,5000000):
+            sample = utils.simulate_discrete_distribution(dist)
+            if sample ==0:
+                zero+=1
+            if sample ==1:
+                one+=1
+            if sample ==2:
+                two+=1
+        result = [zero, one, two]
+        result /= np.sum(result, dtype=float)
+        np.testing.assert_allclose(dist, result, rtol=0.001, atol=0.0001, err_msg="Bad simulate discrete dist", verbose=True)
+                
+            
+            
+        
+        
+        
     def test_random_edge_population(self):
         for _ in xrange(0,10):
             pop_size = np.random.randint(2,50)

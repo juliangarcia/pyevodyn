@@ -6,7 +6,6 @@ Created on Aug 8, 2012
 '''
 import numpy as np
 import pyevodyn.utils as utils 
-from pyevodyn import games
 from collections import namedtuple
 
 _FITNESS_MAPPING = ['exp', 'lin']
@@ -119,12 +118,19 @@ class MoranProcess(object):
         mutation_step = 
         
         """
+        current_distribution = np.array(population_array, dtype=float)
+        current_distribution /= float(self.population_size)
+        
         #COMPUTE PAYOFF
         payoff = self.payoff_function(population_array)
+        #TODO: There may be a problem  here, should this be weighted by current composition? define clearly what payoff_function should be
+        #payoff = payoff*current_distribution #IF THIS STEP IS COMENTED IT DOES NOT WORK PROPERLY, FIN OUT WHY 
         
         #COMPUTE FITNESS
         fitness = map(self.__mapping_function,payoff)
         #FITNESS PROPORTIONAL DISTRIBUTION 
+        #TODO: CLarify this weighting.
+        fitness = fitness*current_distribution
         fitness /= np.sum(fitness)
         #choose one random guy in proportion to fitness
         chosen_one = utils.simulate_discrete_distribution(fitness)
@@ -132,8 +138,6 @@ class MoranProcess(object):
         if mutation_step:
             chosen_one = utils.simulate_discrete_distribution(self.mutation_kernel[chosen_one])
         #a random guy dies
-        current_distribution = np.array(population_array, dtype=float)
-        current_distribution /= float(self.population_size)
         dies = utils.simulate_discrete_distribution(current_distribution)
         
         population_array[dies] = population_array[dies] - 1
@@ -141,6 +145,26 @@ class MoranProcess(object):
         population_array[chosen_one] = population_array[chosen_one] + 1
         #the payoff is returned but almost never used.
         return StepResult(population_array, payoff)
+    
+    
+    def simulate_fixation_probability(self, index_of_the_incumbent, index_of_the_mutant, number_of_samples, seed=None):
+        """
+        #TODO: Simulate
+        """
+        np.random.seed(seed)
+        positives = 0
+        initial_population = np.zeros(self.number_of_strategies, dtype='int')
+        initial_population[index_of_the_incumbent] = self.population_size -1
+        initial_population[index_of_the_mutant] = 1
+        for _ in xrange(0,number_of_samples):
+            population_array = np.array(initial_population)
+            converged_to = is_population_monomorphous(population_array, self.population_size)
+            while(converged_to == None):
+                population_array = self.step(population_array, mutation_step=False)[0]
+                converged_to = is_population_monomorphous(population_array, self.population_size)
+            if(converged_to == index_of_the_mutant):
+                positives+=1
+        return positives/float(number_of_samples)
     
     
    

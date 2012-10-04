@@ -88,7 +88,7 @@ def normalize_vector(vector):
     Out[1]: array([ 0.33333333,  0.33333333,  0.33333333])
 
     """
-    vector /= np.max(np.sum(vector), axis=0)
+    vector /=np.sum(vector, dtype=float)
     return vector
 
 
