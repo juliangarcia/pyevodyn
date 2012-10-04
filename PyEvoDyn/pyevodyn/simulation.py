@@ -7,6 +7,8 @@ Created on Aug 8, 2012
 import numpy as np
 import pyevodyn.utils as utils 
 from collections import namedtuple
+import pyevodyn
+import math
 
 _FITNESS_MAPPING = ['exp', 'lin']
 
@@ -66,6 +68,7 @@ class MoranProcess(object):
         self.game_matrix = game_matrix
         if self.game_matrix is not None:
             self.payoff_function = self.__default_payoff_function
+            self.__diagonal = np.diagonal(self.game_matrix)
         else:
             self.payoff_function = payoff_function
             #test that the payoff function is well specified
@@ -88,7 +91,7 @@ class MoranProcess(object):
     
     #EXPONENTIAL MAPPING
     def __exponential_mapping(self, value):
-        return np.exp(self.intensity_of_selection * value)
+        return math.e**(self.intensity_of_selection*value)
     #LINEAR MAPPING
 
     def __linear_mapping(self, value):
@@ -105,8 +108,18 @@ class MoranProcess(object):
         ndarray
 
         """
-        return (1.0/(self.population_size-1.0))*(np.dot(self.game_matrix,population_array)-np.diag(self.game_matrix))
+        return (1.0/(self.population_size-1.0))*(np.dot(self.game_matrix,population_array)-self.__diagonal)
 
+    def __fitness_proportional_distribution(self, mapping_function, payoff_vector, current_distribution):
+        fitness_sum = 0.0
+        ans = np.zeros(self.number_of_strategies)
+        for i in xrange(0,self.number_of_strategies):
+            val = current_distribution[i]*mapping_function(payoff_vector[i])
+            ans[i] = val
+            fitness_sum+=val
+        return (1.0/fitness_sum)*ans
+        
+    
     
     def step(self, population_array, mutation_step=True):
         """
@@ -123,15 +136,7 @@ class MoranProcess(object):
         
         #COMPUTE PAYOFF
         payoff = self.payoff_function(population_array)
-        #TODO: There may be a problem  here, should this be weighted by current composition? define clearly what payoff_function should be
-        #payoff = payoff*current_distribution #IF THIS STEP IS COMENTED IT DOES NOT WORK PROPERLY, FIN OUT WHY 
-        
-        #COMPUTE FITNESS
-        fitness = map(self.__mapping_function,payoff)
-        #FITNESS PROPORTIONAL DISTRIBUTION 
-        #TODO: CLarify this weighting.
-        fitness = fitness*current_distribution
-        fitness /= np.sum(fitness)
+        fitness = self.__fitness_proportional_distribution(self.__mapping_function, payoff, current_distribution)
         #choose one random guy in proportion to fitness
         chosen_one = utils.simulate_discrete_distribution(fitness)
         #mutate this guy
@@ -185,9 +190,16 @@ def is_population_monomorphous(population_array, population_size):
 
 
 def main():
-    #mp = MoranProcess(game, population_size=10, intensity_of_selection=0.0, fitness_mapping='exp', mutation_probability=0.001)
-    pass
-    
+    game= pyevodyn.games.two_times_two(a=3.0, b=0.5, c=0.5, d=2.0)
+    intensity_of_selection=1.0
+    population_size=5
+    number_of_samples=100000
+    index_of_the_incumbent=1
+    index_of_the_mutant=0
+    print "Here..."
+    mp = MoranProcess(population_size, intensity_of_selection, game_matrix=game, fitness_mapping='exp', mutation_probability=0.1)
+    print mp.simulate_fixation_probability(index_of_the_incumbent=index_of_the_incumbent, index_of_the_mutant=index_of_the_mutant, number_of_samples=number_of_samples, seed=None)
+        
     
     
 if __name__ == "__main__":
