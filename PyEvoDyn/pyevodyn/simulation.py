@@ -140,9 +140,9 @@ class MoranProcess(object):
         #a random guy dies
         dies = utils.simulate_discrete_distribution(current_distribution)
         
-        population_array[dies] = population_array[dies] - 1
+        population_array[dies]-=1
         #we add a copy of the fit guy
-        population_array[chosen_one] = population_array[chosen_one] + 1
+        population_array[chosen_one]+=1
         #the payoff is returned but almost never used.
         return StepResult(population_array, payoff)
     

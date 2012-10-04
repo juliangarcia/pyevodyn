@@ -7,7 +7,6 @@ Created on Aug 8, 2012
 import math
 import numpy as np
 
-
 def uniform_mutation_kernel(mutation_probability, number_of_strategies):
     """
     Returns a uniform mutation kernel, A = [a_ij] = u/ (n-1), where n is the number of strategies
