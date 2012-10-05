@@ -4,10 +4,11 @@ Created on Oct 3, 2012
 @author: garcia
 '''
 import unittest
-import pyevodyn.simulation as sim
 from pyevodyn import games, numerical
 import numpy as np
 from pyevodyn.simulation import MoranProcess
+import pyevodyn.simulation as sim
+
 
 class Test(unittest.TestCase):
 
@@ -125,7 +126,8 @@ class Test(unittest.TestCase):
         game= games.two_times_two(a=3.0, b=0.5, c=0.5, d=2.0)
         intensity_of_selection=1.0
         population_size=5
-        number_of_samples=100000
+        #number_of_samples=100000
+        number_of_samples=100
         index_of_the_incumbent=1
         index_of_the_mutant=0
         print "Here..."
