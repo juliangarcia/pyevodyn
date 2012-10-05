@@ -80,22 +80,13 @@ class MoranProcess(object):
         #POP SIZE
         self.population_size = population_size
         #FITNESS MAPPING
-        if fitness_mapping == 'lin':
-            self.__mapping_function = self.__linear_mapping
-        if fitness_mapping == 'exp':
-            self.__mapping_function = self.__exponential_mapping
+        self.fitness_mapping = fitness_mapping
             
         #END OF INIT    
         
     
     
-    #EXPONENTIAL MAPPING
-    def __exponential_mapping(self, value):
-        return math.e**(self.intensity_of_selection*value)
-    #LINEAR MAPPING
-
-    def __linear_mapping(self, value):
-        return 1.0 + self.intensity_of_selection * value
+    
 
     #GAME PAYOFF FUNCTION
     def __default_payoff_function(self, population_array):
@@ -110,15 +101,23 @@ class MoranProcess(object):
         """
         return (1.0/(self.population_size-1.0))*(np.dot(self.game_matrix,population_array)-self.__diagonal)
 
-    def __fitness_proportional_distribution(self, mapping_function, payoff_vector, current_distribution):
+    def __fitness_proportional_distribution_exp(self, payoff_vector, current_distribution):
         fitness_sum = 0.0
         ans = np.zeros(self.number_of_strategies)
         for i in xrange(0,self.number_of_strategies):
-            val = current_distribution[i]*mapping_function(payoff_vector[i])
+            val = current_distribution[i]*(math.e**(self.intensity_of_selection*payoff_vector[i]))
             ans[i] = val
             fitness_sum+=val
         return (1.0/fitness_sum)*ans
         
+    def __fitness_proportional_distribution_lin(self, payoff_vector, current_distribution):
+        fitness_sum = 0.0
+        ans = np.zeros(self.number_of_strategies)
+        for i in xrange(0,self.number_of_strategies):
+            val = current_distribution[i]*(1.0 - self.intensity_of_selection + self.intensity_of_selection*payoff_vector[i])
+            ans[i] = val
+            fitness_sum+=val
+        return (1.0/fitness_sum)*ans
     
     
     def step(self, population_array, mutation_step=True):
@@ -136,7 +135,10 @@ class MoranProcess(object):
         
         #COMPUTE PAYOFF
         payoff = self.payoff_function(population_array)
-        fitness = self.__fitness_proportional_distribution(self.__mapping_function, payoff, current_distribution)
+        if self.fitness_mapping == 'lin':
+            fitness = self.__fitness_proportional_distribution_lin(payoff, current_distribution)
+        else:
+            fitness = self.__fitness_proportional_distribution_exp(payoff, current_distribution)      
         #choose one random guy in proportion to fitness
         chosen_one = utils.simulate_discrete_distribution(fitness)
         #mutate this guy
