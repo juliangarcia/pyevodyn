@@ -44,6 +44,7 @@ tags
 *.tbz2
 *.tgz
 *.zip
+*.lprof
 
 # Python files #
 ################
@@ -88,3 +89,4 @@ Thumbs.db
 /.pydevproject
 /reinstall.txt
 /notebooks
+/profiles

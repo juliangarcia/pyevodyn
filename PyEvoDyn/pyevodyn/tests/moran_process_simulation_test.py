@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
         
     def test_if_a_type_is_not_there_it_never_shows_up(self):
         #np.random.seed(999)
-        for i in xrange(0,5):
+        for i in xrange(0,3):
             pop = np.random.randint(1,10,5) #random population with 5 strategies
             zero_element = np.random.randint(0,5)
             pop[zero_element] = 0
