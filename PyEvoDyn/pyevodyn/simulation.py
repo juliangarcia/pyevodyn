@@ -9,7 +9,6 @@ import pyevodyn.utils as utils
 from collections import namedtuple
 from math import e as the_number_e
 import pyevodyn
-import math
 
 _FITNESS_MAPPING = ['exp', 'lin']
 
