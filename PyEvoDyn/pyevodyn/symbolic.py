@@ -242,12 +242,6 @@ def array_to_symbolic_matrix(array):
     return sympy.Matrix(array.shape[0],array.shape[1], lambda i,j: array[i,j])
 
 
-class NotAFormula(Exception):
-    """
-    Launched when a pickled expression is not a valid type
-    """
-    pass
-
 
 
 #TODO: Document from here below
@@ -260,7 +254,7 @@ def load_formula(file_name):
         with open(file_name, "rb") as f: 
             ans = pickle.load(f)
             if not isinstance(ans,(sympy.Expr,sympy.Matrix)):
-                raise NotAFormula()
+                raise TypeError("The pickled object must be a sympy expresion or a sympy Matrix")
             return ans
     except IOError:
         print 'File ' + str(file_name) +'does not exists'
@@ -270,7 +264,7 @@ def save_formula(formula, file_name):
     Saves a formula
     """
     if not isinstance(formula,(sympy.Expr,sympy.Matrix)):
-        raise NotAFormula()
+        raise TypeError("The object to pickle must be a sympy expresion or a sympy Matrix")
     else:
         pickle.dump(formula, open(file_name, "wb" ) )
 
