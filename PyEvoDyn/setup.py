@@ -54,7 +54,7 @@ if __name__ == '__main__':
         license = "BSD",
         keywords = "evolution dynamics complex systems",
         url = "http://garciajulian.com",
-        long_description=read('README'),
+        #long_description=read('README'),
         classifiers=[
             "Development Status :: 2 - Pre Alpha",
             "Topic :: Utilities",
