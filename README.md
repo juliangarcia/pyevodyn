@@ -9,5 +9,7 @@ There is an experimental module for stochastic simulations, but as of now the pe
 
 There is an analytical module, that uses sympy to facilitate calculations with symbolic variables.
 
-The most mature modules uses NumPy to numerically compute fixation probabilities and stationary distributions in a Moran process. Pairwise invasion analysis can also be done via numerical methods.
+The most mature module relies on NumPy to numerically compute fixation probabilities and stationary distributions in a Moran process. Pairwise invasion analysis can also be done via numerical methods in symmetric 2-player games.
+
+
 
