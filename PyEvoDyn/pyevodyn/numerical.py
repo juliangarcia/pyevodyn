@@ -233,3 +233,58 @@ def stationary_distribution_weak_selection(game_matrix, population_size, intensi
     
     size = game_matrix.shape[0]
     return [(1 + ((intensity_of_selection*population_size*(1-mutation_probability))*((__auxiliary_l_k(index,game_matrix, size) + population_size*mutation_probability*__auxiliary_h_k(index,game_matrix, size))/((1+population_size*mutation_probability)*(2+population_size*mutation_probability)))))/size for index in xrange(0, size)]
+
+
+
+def replicator_step(game_matrix, x, dt=0.0001):
+    """
+    Computes a replicator step.
+    
+    This does not support mutation kernels
+
+    Parameters
+    ----------
+    game_matrix: numpy matrix
+    x: ndarray 
+    dt: float
+    
+    Returns
+    -------
+    out: ndarray
+    
+    Examples
+    --------
+    #TODO: Write examples 
+    """
+    fitness_vector = np.dot(game_matrix,x)
+    average_fitness = np.dot(x,fitness_vector)
+    return x + x*(fitness_vector - average_fitness)*dt
+    
+    
+def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.000001):
+    """
+    Computes a replicator trajectory. If it reaches a rest point it returns observations until there. Otherwise
+    it keeps on going until maximum_iterations are reached.
+    
+        Parameters
+    ----------
+    game_matrix: numpy matrix
+    x_0: ndarray
+    maximum_iterations:int 
+    dt: float
+    
+    Returns
+    -------
+    out: list
+    
+    Examples
+    --------
+    #TODO: Write examples 
+    """
+    orbit = [x_0]
+    for _ in xrange(0, maximum_iterations):
+        orbit.append(replicator_step(game_matrix, orbit[-1], dt))
+        if (np.allclose(orbit[-1],orbit[-2])):
+            return orbit
+    return orbit
+
