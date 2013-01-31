@@ -261,7 +261,7 @@ def replicator_step(game_matrix, x, dt=0.0001):
     return x + x*(fitness_vector - average_fitness)*dt
     
     
-def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.000001):
+def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.0001):
     """
     Computes a replicator trajectory. If it reaches a rest point it returns observations until there. Otherwise
     it keeps on going until maximum_iterations are reached.
@@ -285,6 +285,16 @@ def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.000001):
     for _ in xrange(0, maximum_iterations):
         orbit.append(replicator_step(game_matrix, orbit[-1], dt))
         if (np.allclose(orbit[-1],orbit[-2])):
-            return orbit
-    return orbit
+            break
+    #transform the result to a list of lists
+    ans = []
+    for i in xrange(0, len(game_matrix)):
+        ans.append(__get_strategy_path_from_orbit(orbit, i))
+    return ans    
+    
 
+def __get_strategy_path_from_orbit(orbit, strategy_number):
+    ans = []
+    for i in orbit:
+        ans.append(i[strategy_number])
+    return ans

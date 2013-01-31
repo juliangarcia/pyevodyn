@@ -285,3 +285,15 @@ def hamming_distance(str1, str2):
             diffs += 1
     return diffs
 
+
+def get_random_point_inside_simplex(dimension):
+    """
+    Returns a vector that sums up to one, where components have been uniformly chosen.
+    
+    Parameters:
+    ----------
+    dimension:int
+    
+    """
+    exponencial = np.random.exponential(size=dimension)
+    return normalize_vector(exponencial)
