@@ -8,6 +8,7 @@ import math
 import numpy as np
 import pyevodyn.utils as utils
 from operator import itemgetter
+from pyevodyn.utils import kahan_sum
 
 
 def monomorphous_transition_matrix(game_matrix, population_size, intensity_of_selection, kernel=None, mutation_probability=None):
@@ -68,87 +69,55 @@ def transition_probability_from_a_to_b(game_matrix_2_x_2, population_size, inten
     return mutation_probability * fixation_probability_strategy_b(game_matrix_2_x_2, intensity_of_selection, population_size)
 
 
-def fixation_probability_strategy_b(game_matrix_2_x_2, intensity_of_selection, population_size):
-    """
-    Computes the fixation probability of a mutant B in a pop of A's, where the game between A and B is given by a matrix 2x2 game.
-    This corresponds to  equation 20 of Traulsen,Shoresh, Nowak  2008.
-
-    Parameters:
-    -----------
-    game_matrix_2_x_2: ndarray
-    intensity_of_selection: double
-    population_size: int
-
-    Returns:
-    -------
-    double: fixation probability
-
-    """
-    a_value = game_matrix_2_x_2[0][0]
-    b_value = game_matrix_2_x_2[0][1]
-    c_value = game_matrix_2_x_2[1][0]
-    d_value = game_matrix_2_x_2[1][1]
-    transformed_matrix = [[d_value, c_value], [b_value, a_value]]
-    lista = [__auxiliary_function_for_exponential_mapping(
-        intensity_of_selection, k,
-             transformed_matrix, population_size) for k in xrange(0, population_size)]
-    if any(np.isinf(lista)):
+def fixation_probability(mutant_index, resident_index, intensity_of_selection, payoff_function, population_size, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
+    suma = []
+    for k in xrange(1, population_size):
+        mult = []
+        for j in xrange(1, k + 1):
+            if (payoff_function is not None and game_matrix is None):
+                if (number_of_strategies==None):
+                    raise ValueError('When using a custom payoff_function you must specify number_of_strategies.')
+                strategies = np.zeros(number_of_strategies, dtype=int)
+                strategies[mutant_index] = j
+                strategies[resident_index] = population_size - j
+                payoffMutant = payoff_function(mutant_index, population_composition=strategies, **kwargs)
+                payoffResident = payoff_function(resident_index, population_composition=strategies, **kwargs)
+            elif (game_matrix is not None and payoff_function is None):
+                (payoffMutant,payoffResident)  = payoff_from_matrix(mutant_index,resident_index, game_matrix, j, population_size)
+            else:
+                raise ValueError('No valid payoff structure given, please specify a game_matrix or a payoff_function.')
+            if (mapping=='EXP'):
+                fitnessMutant = math.e ** (intensity_of_selection * payoffMutant)
+                fitnessResident = math.e ** (intensity_of_selection * payoffResident)
+            elif (mapping =='LIN'):
+                fitnessMutant =  1 - intensity_of_selection + intensity_of_selection*payoffMutant
+                fitnessResident = 1 - intensity_of_selection + intensity_of_selection*payoffResident
+            else:
+                raise ValueError('No valid mapping given. Use EXP or LIN for exponential and linear respectively.')
+            mult.append(fitnessResident/fitnessMutant) 
+        suma.append(utils.kahan_product(mult))
+    if any(np.isinf(suma)):
         return 0.0
     try:
-        suma = math.fsum(lista)
+        complex_expression = utils.kahan_sum(suma)    
     except OverflowError:
         return 0.0
-    if np.isinf(suma):
+    if np.isinf(complex_expression):
         return 0.0
-    return 1.0 / suma
+    return 1.0 / (1.0 + complex_expression)
 
 
-def fixation_probability_strategy_a(matrix_2_x_2, intensity_of_selection,
-                                    population_size):
+def payoff_from_matrix(focal_index, other_index, game_matrix, number_of_focal_individuals, population_size):
     """
-    Computes the fixation probability of a mutant A in a pop of B's, where the game between A and B is given by a matrix 2x2 game.
-    This corresponds to  equation 20 of Traulsen,Shoresh, Nowak  2008.
-    See also, fixation_probability_strategy_b for the implementation where the mutant is strategy b.
-
-    Parameters:
-    -----------
-    game_matrix_2_x_2: ndarray
-    intensity_of_selection: double
-    population_size: int
-
-    Returns:
-    -------
-    double: fixation probability
-
+    Computes a vector of payoffs from a game_matrix. The first element is the payoff of the strategy with index focal_index, the second element is
+    the payoff of the strategy with index other_index. The game is given by game_matrix, and assumes a population cmposed of number_of_focal_individuals of strategy focal_index
+    and population_size - number_of_focal_individuals copies of strategy other_index
+    
     """
-    lista = [__auxiliary_function_for_exponential_mapping(
-        intensity_of_selection, k,
-             matrix_2_x_2, population_size) for k in xrange(0, population_size)]
-    if any(np.isinf(lista)):
-        return 0.0
-    try:
-        suma = math.fsum(lista)
-    except OverflowError:
-        return 0.0
-    if np.isinf(suma):
-        return 0.0
-    return 1.0 / suma
+    sub_matrix = np.array([[game_matrix[focal_index, focal_index],game_matrix[focal_index, other_index]],[game_matrix[other_index, focal_index],game_matrix[other_index, other_index]]])
+    return (1.0/(population_size-1.0))*(np.dot(sub_matrix,np.array([number_of_focal_individuals,population_size-number_of_focal_individuals]))-np.diagonal(sub_matrix))
+    
 
-
-def __auxiliary_function_for_exponential_mapping(
-    intensity_of_selection, k_value, matrix_2_x_2,
-        population_size):
-    """
-    This is an auxiliary function, used to compute fixation probabilities. It should not be called alone.
-    It implements the sum term in equation 20 of  Traulsen,Shoresh, Nowak  2008.
-    """
-    a_value = matrix_2_x_2[0][0]
-    b_value = matrix_2_x_2[0][1]
-    c_value = matrix_2_x_2[1][0]
-    d_value = matrix_2_x_2[1][1]
-    part_0 = k_value * (k_value + 1.0) * (intensity_of_selection / 2.0) * (1.0 / (population_size - 1.0)) * (-a_value + b_value + c_value - d_value)
-    part_1 = k_value * intensity_of_selection * (1.0 / (population_size - 1.0)) * (a_value - b_value * population_size + d_value * population_size - d_value)
-    return math.e ** (part_0 + part_1)
 
 
 def stationary_distribution(transition_matrix_markov_chain):
