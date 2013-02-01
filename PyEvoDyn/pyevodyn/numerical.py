@@ -8,10 +8,9 @@ import math
 import numpy as np
 import pyevodyn.utils as utils
 from operator import itemgetter
-from pyevodyn.utils import kahan_sum
 
 
-def monomorphous_transition_matrix(game_matrix, population_size, intensity_of_selection, kernel=None, mutation_probability=None):
+def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None, mutation_kernel=None,  mutation_probability = None, population_size =None, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
     """
     Computes the associated markov chain (transition matrix), when mutations are assumed to be small.
     The approximation is accurate when there are no stable mixtures between any pair of strategies.
@@ -27,33 +26,38 @@ def monomorphous_transition_matrix(game_matrix, population_size, intensity_of_se
     Returns
     -------
     ans: ndarray, stochastic matrix
-
+    
+    See also
+    ---------
+    old signature: (game_matrix, population_size, intensity_of_selection, kernel=None, mutation_probability=None)
+    
     """
-    #TODO: Warning if the game contains stable mixtures
-
-    if (kernel is None and mutation_probability is None):
+    if (mutation_kernel is None and mutation_probability is None):
         raise ValueError('Either a mutation kernel, or a mutation probability has to be specified')
-    size = len(game_matrix)
-    if (kernel is None and mutation_probability is not None):
-        kernel = utils.uniform_mutation_kernel(mutation_probability, size)
+    if game_matrix is not None:
+        size = len(game_matrix)
+    elif payoff_function is not None and number_of_strategies is not None:
+        size = number_of_strategies
+    else:
+        raise ValueError("if specifying a payoff function the number_of_strategies has to be provided")
+    if (mutation_kernel is None and mutation_probability is not None):
+        mutation_kernel = utils.uniform_mutation_kernel(mutation_probability, size)
     ans = np.zeros((size, size))
     for i in xrange(0, size):
         for j in xrange(0, size):
             if i != j:
-                matrix_2_x_2 = utils.submaxtrix(game_matrix, i, j)
-                mutation_probability = kernel[i, j]
-                    #chance that j appears in an i population
+                #chance that j appears in an i population
                 #the mutation probability already comes from the kernel divided by the number of strategies
-                ans[i, j] = mutation_probability * fixation_probability_strategy_b(matrix_2_x_2, intensity_of_selection, population_size)
-    for i in range(0, size):
+                ans[i, j] = transition_probability(i, j, intensity_of_selection, payoff_function, mutation_kernel[i, j], population_size, game_matrix, number_of_strategies ,mapping, **kwargs)
+    for i in xrange(0, size):
         ans[i, i] = 1.0 - math.fsum(ans[i, :])
     return ans
 
 
-def transition_probability_from_a_to_b(game_matrix_2_x_2, population_size, intensity_of_selection, mutation_probability):
+def transition_probability(origin_index, destiny_index, intensity_of_selection, payoff_function, mutation_probability, population_size =None, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
     """
     Computes the transition probability between two homogeneous populations
-
+    
     Parameters:
     ----------
     game_matrix_2_x_2: ndarray (size 2)
@@ -64,12 +68,18 @@ def transition_probability_from_a_to_b(game_matrix_2_x_2, population_size, inten
     Returns
     -------
     out: double
+    
+    See also:
+    ---------
+    old  signature: (game_matrix_2_x_2, population_size, intensity_of_selection, mutation_probability)
+    
 
     """
-    return mutation_probability * fixation_probability_strategy_b(game_matrix_2_x_2, intensity_of_selection, population_size)
+    fix_probability = fixation_probability(destiny_index, origin_index, intensity_of_selection, population_size, payoff_function , game_matrix, number_of_strategies, mapping, **kwargs)
+    return mutation_probability*fix_probability
 
 
-def fixation_probability(mutant_index, resident_index, intensity_of_selection, payoff_function, population_size, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
+def fixation_probability(mutant_index, resident_index, intensity_of_selection, population_size, payoff_function=None, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
     suma = []
     for k in xrange(1, population_size):
         mult = []

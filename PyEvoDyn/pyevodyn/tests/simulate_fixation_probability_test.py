@@ -18,7 +18,8 @@ class Test(unittest.TestCase):
         number_of_samples=20000
         index_of_the_incumbent=1
         index_of_the_mutant=0
-        numerical_value =  numerical.fixation_probability_strategy_a(game, intensity_of_selection, population_size)
+        #numerical_value =  numerical.fixation_probability_strategy_a(game, intensity_of_selection, population_size)
+        numerical_value =  numerical.fixation_probability(mutant_index=0, resident_index=1, intensity_of_selection=intensity_of_selection, population_size=population_size, game_matrix=game, mapping='EXP')
         print numerical_value
         mp = MoranProcess(population_size, intensity_of_selection, game_matrix=game, fitness_mapping='exp', mutation_probability=0.1)
         simulated_value = mp.simulate_fixation_probability(index_of_the_incumbent=index_of_the_incumbent, index_of_the_mutant=index_of_the_mutant, number_of_samples=number_of_samples, seed=None)
