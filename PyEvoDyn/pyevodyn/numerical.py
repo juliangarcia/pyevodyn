@@ -8,7 +8,7 @@ import math
 import numpy as np
 import pyevodyn.utils as utils
 from operator import itemgetter
-
+from scipy.integrate import odeint
 
 def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None, mutation_kernel=None,  mutation_probability = None, population_size =None, game_matrix = None, number_of_strategies=None ,mapping='EXP', **kwargs):
     """
@@ -215,43 +215,33 @@ def stationary_distribution_weak_selection(game_matrix, population_size, intensi
 
 
 
-def replicator_step(game_matrix, x, dt=0.0001):
+def replicator_equation(x,t, game):
     """
-    Computes a replicator step.
-    
-    This does not support mutation kernels
-
     Parameters
     ----------
-    game_matrix: numpy matrix
-    x: ndarray 
-    dt: float
+    x: ndarray initial state
+    game: ndarray square matrix
     
-    Returns
-    -------
-    out: ndarray
-    
-    Examples
-    --------
-    #TODO: Write examples 
+    Returns:
+    out: ndarray next state
     """
-    fitness_vector = np.dot(game_matrix,x)
+    _ = t #t is not used here, but needs to be passed
+    fitness_vector = np.dot(game,x)
     average_fitness = np.dot(x,fitness_vector)
-    return x + x*(fitness_vector - average_fitness)*dt
-    
-    
-def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.0001):
+    return x*(fitness_vector - average_fitness)
+
+
+def replicator_trajectory(game_matrix, x_0, t_vector, **kwargs):
     """
-    Computes a replicator trajectory. If it reaches a rest point it returns observations until there. Otherwise
-    it keeps on going until maximum_iterations are reached.
+    Computes a replicator trajectory for a given game, starting point and time vector.
+    It uses scipy's odeint.
     
-        Parameters
+    Parameters
     ----------
-    game_matrix: numpy matrix
+    game_matrix: numpy matrix (must be square)
     x_0: ndarray
-    maximum_iterations:int 
-    dt: float
-    
+    t_vector: time array 
+
     Returns
     -------
     out: list
@@ -260,20 +250,68 @@ def replicator_trajectory(game_matrix, x_0, maximum_iterations, dt=0.0001):
     --------
     #TODO: Write examples 
     """
-    orbit = [x_0]
-    for _ in xrange(0, maximum_iterations):
-        orbit.append(replicator_step(game_matrix, orbit[-1], dt))
-        if (np.allclose(orbit[-1],orbit[-2])):
-            break
-    #transform the result to a list of lists
-    ans = []
-    for i in xrange(0, len(game_matrix)):
-        ans.append(__get_strategy_path_from_orbit(orbit, i))
-    return ans    
-    
+    soln = odeint(replicator_equation, x_0, t_vector, args=(game_matrix,), **kwargs)
+    return [soln[:, i] for i in xrange(len(game_matrix))]
 
-def __get_strategy_path_from_orbit(orbit, strategy_number):
-    ans = []
-    for i in orbit:
-        ans.append(i[strategy_number])
-    return ans
+
+def replicator_equation_two_populations(x, t, game1, game2, number__of_strategies_population_1, number__of_strategies_population_2):
+    """
+    Parameters
+    ----------
+    x: ndarray initial state (concatenated from the two populations)
+    t: time
+    game1: ndarray, game for population 1
+    game2: ndarray, game for population 2
+    number__of_strategies_population_1: int
+    number__of_strategies_population_2: int
+    Returns:
+    out: ndarray next state (concatenated from the two populations)
+    """
+    
+    x_population_1 = x[0:number__of_strategies_population_1] #the first piece of y corresponds to population 1 
+    x_population_2 = x[number__of_strategies_population_1:number__of_strategies_population_1+number__of_strategies_population_2] #the second piece of y corresponds to population 2
+    _ = t #t needs to be passed
+    #First Ay
+    fitness_vector_1 = np.dot(game1,x_population_2)
+    # and Bx (see equation above)
+    fitness_vector_2 = np.dot(game2,x_population_1)
+    #Now xAy
+    average_fitness_1 = np.dot(x_population_1,fitness_vector_1)
+    #And yBx
+    average_fitness_2 = np.dot(x_population_2,fitness_vector_2)
+    #the next lines correspond to equations 10.5 and 10.6 of Hofbauer and Sigmund (page 116)
+    new_population_1 =  x_population_1*(fitness_vector_1 - average_fitness_1)
+    new_population_2 =  x_population_2*(fitness_vector_2 - average_fitness_2)
+    return np.array(new_population_1.tolist() + new_population_2.tolist()) 
+
+
+def replicator_trajectory_two_populations(game_matrix_1,game_matrix_2, x_0, y_0, t_vector, **kwargs):
+    """
+    Computes a replicator trajectory for two populations, given two games, starting points and time vector.
+    It uses scipy's odeint.
+    
+    Parameters
+    ----------
+    game_matrix_1: numpy matrix (for population 1)
+    game_matrix_2: numpy matrix (for population 2)
+    x_0: ndarray
+    y_0: ndarray
+    t_vector: time array 
+
+    Returns
+    -------
+    out: list
+    
+    Examples
+    --------
+    #TODO: Write examples 
+    """
+    #join initial populations to fit signature of replicator_equation
+    start = np.array(x_0.tolist() + y_0.tolist())
+    number__of_strategies_population_1 = len(x_0)
+    number__of_strategies_population_2 = len(y_0)
+    #solve
+    soln = odeint(replicator_equation_two_populations, start, t_vector, args=(game_matrix_1, game_matrix_2, number__of_strategies_population_1, number__of_strategies_population_2), **kwargs)
+    return [soln[:, i] for i in xrange(number__of_strategies_population_1+number__of_strategies_population_2)]
+
+
