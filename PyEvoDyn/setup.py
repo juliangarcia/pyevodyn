@@ -33,7 +33,8 @@ if __name__ == '__main__':
         install_requires = [
             'numpy>=1.6.2 ',
             'pandas>=0.8.0',
-            'sympy>=0.7.1'
+            'sympy>=0.7.1',
+            'scipy>=0.10.1'
         ],
           
         # Tests
