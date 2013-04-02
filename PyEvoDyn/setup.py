@@ -11,7 +11,7 @@ def read(fname):
 if __name__ == '__main__':        
     setup(
         name = "pyevodyn",
-        version = "0.0.1",
+        version = "0.0.2dev",
         # Package structure
         #
         # find_packages searches through a set of directories 
