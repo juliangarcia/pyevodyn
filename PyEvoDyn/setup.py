@@ -30,9 +30,9 @@ if __name__ == '__main__':
         # side, a version on the right-hand side, and a comparison 
         # operator between them, e.g. == exact version, >= this version
         # or higher
+        #'pandas>=0.8.0',
         install_requires = [
-            'numpy>=1.6.2 ',
-            'pandas>=0.8.0',
+            'numpy>=1.6.1 ',
             'sympy>=0.7.1',
             'scipy>=0.10.1'
         ],
