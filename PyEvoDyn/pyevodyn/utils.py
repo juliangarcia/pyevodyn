@@ -7,6 +7,7 @@ Created on Aug 8, 2012
 import math
 import numpy as np
 
+
 def uniform_mutation_kernel(mutation_probability, number_of_strategies):
     """
     Returns a uniform mutation kernel, A = [a_ij] = u/ (n-1), where n is the number of strategies
@@ -34,12 +35,12 @@ def uniform_mutation_kernel(mutation_probability, number_of_strategies):
            [ 0.05,  0.05,  0.9 ]])
     """
     a_matrix = np.zeros(shape=(number_of_strategies, number_of_strategies))
-    for i in xrange(0, number_of_strategies):
-        for j in xrange(0, number_of_strategies):
+    for i in range(0, number_of_strategies):
+        for j in range(0, number_of_strategies):
             if i != j:
                 a_matrix[i, j] = mutation_probability / (
                     number_of_strategies - 1.0)
-    for i in xrange(0, number_of_strategies):
+    for i in range(0, number_of_strategies):
         a_matrix[i][i] = 1.0 - a_matrix[i].sum()
     return a_matrix
 
@@ -87,7 +88,7 @@ def normalize_vector(vector):
     Out[1]: array([ 0.33333333,  0.33333333,  0.33333333])
 
     """
-    vector /=np.sum(vector, dtype=float)
+    vector /= np.sum(vector, dtype=float)
     return vector
 
 
@@ -105,7 +106,7 @@ def kahan_sum(list_of_floating_point_numbers):
     """
     suma = 0.0
     c = 0.0
-    for i in xrange(0, len(list_of_floating_point_numbers)):
+    for i in range(0, len(list_of_floating_point_numbers)):
         y = list_of_floating_point_numbers[i] - c
         t = suma + y
         c = (t - suma) - y
@@ -151,7 +152,7 @@ def binomial_coefficient(n_, k_):
     if (n == -1 and k > 0):
         return -1.0 ** k
     if (n == -1 and k < 0):
-        return(-1.0 ** k) * -1.0
+        return (-1.0 ** k) * -1.0
     if (n == -1 and k == 0):
         return 1.0
     if (n == k):
@@ -169,7 +170,7 @@ def binomial_coefficient(n_, k_):
 
 
 def hypergeometric(x, i):
-    #TODO: Check against different numpy implementations
+    # TODO: Check against different numpy implementations
     """
     Computes the hypergeometric coefficients...
 
@@ -182,11 +183,11 @@ def hypergeometric(x, i):
     -------
     Hypergeomertic coefficient  Coefficient.
     """
-    #TODO:Improve documentation and add examples
+    # TODO:Improve documentation and add examples
     if len(x) != len(i):
         raise ValueError('x and i should be arrays of the same size')
     list_of_binomial_coefficients = [binomial_coefficient(
-        x[k], i[k]) for k in xrange(0, len(x))]
+        x[k], i[k]) for k in range(0, len(x))]
     nom = kahan_product(list_of_binomial_coefficients)
     if nom == 0.0:
         return 0.0
@@ -247,7 +248,7 @@ def random_edge_population(number_of_strategies, population_size):
     while (edge1 == edge2):
         [edge1, edge2] = np.random.random_integers(
             0, number_of_strategies - 1, 2)
-    for __ in xrange(0, population_size):
+    for __ in range(0, population_size):
         if np.random.randint(0, 2):
             ans[edge1] += 1
         else:

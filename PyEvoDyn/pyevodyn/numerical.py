@@ -11,7 +11,9 @@ from operator import itemgetter
 from scipy.integrate import odeint
 
 
-def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None, mutation_kernel=None,  mutation_probability=None, population_size=None, game_matrix=None, number_of_strategies=None, mapping='EXP', **kwargs):
+def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None, mutation_kernel=None,
+                                   mutation_probability=None, population_size=None, game_matrix=None,
+                                   number_of_strategies=None, mapping='EXP', **kwargs):
     """
     Computes the associated markov chain (transition matrix), when mutations are assumed to be small.
     The approximation is accurate when there are no stable mixtures between any pair of strategies.
@@ -47,20 +49,21 @@ def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None,
         mutation_kernel = utils.uniform_mutation_kernel(
             mutation_probability, size)
     ans = np.zeros((size, size))
-    for i in xrange(0, size):
-        for j in xrange(0, size):
+    for i in range(0, size):
+        for j in range(0, size):
             if i != j:
                 # chance that j appears in an i population
                 # the mutation probability already comes from the kernel
                 # divided by the number of strategies
                 ans[i, j] = transition_probability(i, j, intensity_of_selection, payoff_function, mutation_kernel[
-                                                   i, j], population_size, game_matrix, number_of_strategies, mapping, **kwargs)
-    for i in xrange(0, size):
+                    i, j], population_size, game_matrix, number_of_strategies, mapping, **kwargs)
+    for i in range(0, size):
         ans[i, i] = 1.0 - math.fsum(ans[i, :])
     return ans
 
 
-def transition_probability(origin_index, destiny_index, intensity_of_selection, payoff_function, mutation_probability, population_size=None, game_matrix=None, number_of_strategies=None, mapping='EXP', **kwargs):
+def transition_probability(origin_index, destiny_index, intensity_of_selection, payoff_function, mutation_probability,
+                           population_size=None, game_matrix=None, number_of_strategies=None, mapping='EXP', **kwargs):
     """
     Computes the transition probability between two homogeneous populations
 
@@ -87,11 +90,12 @@ def transition_probability(origin_index, destiny_index, intensity_of_selection, 
     return mutation_probability * fix_probability
 
 
-def fixation_probability(mutant_index, resident_index, intensity_of_selection, population_size, payoff_function=None, game_matrix=None, number_of_strategies=None, mapping='EXP', **kwargs):
+def fixation_probability(mutant_index, resident_index, intensity_of_selection, population_size, payoff_function=None,
+                         game_matrix=None, number_of_strategies=None, mapping='EXP', **kwargs):
     suma = []
-    for k in xrange(1, population_size):
+    for k in range(1, population_size):
         mult = []
-        for j in xrange(1, k + 1):
+        for j in range(1, k + 1):
             if (payoff_function is not None and game_matrix is None):
                 if (number_of_strategies is None):
                     raise ValueError(
@@ -114,9 +118,9 @@ def fixation_probability(mutant_index, resident_index, intensity_of_selection, p
                 fitnessResident = math.e ** (intensity_of_selection * payoffResident)
             elif (mapping == 'LIN'):
                 fitnessMutant = 1.0 - intensity_of_selection + \
-                    intensity_of_selection * payoffMutant
+                                intensity_of_selection * payoffMutant
                 fitnessResident = 1.0 - intensity_of_selection + \
-                    intensity_of_selection * payoffResident
+                                  intensity_of_selection * payoffResident
             else:
                 raise ValueError(
                     'No valid mapping given. Use EXP or LIN for exponential and linear respectively.')
@@ -140,8 +144,9 @@ def payoff_from_matrix(focal_index, other_index, game_matrix, number_of_focal_in
     and population_size - number_of_focal_individuals copies of strategy other_index
     """
     sub_matrix = np.array([[game_matrix[focal_index, focal_index], game_matrix[focal_index, other_index]], [
-                          game_matrix[other_index, focal_index], game_matrix[other_index, other_index]]])
-    return (1.0 / (population_size - 1.0)) * (np.dot(sub_matrix, np.array([number_of_focal_individuals, population_size - number_of_focal_individuals])) - np.diagonal(sub_matrix))
+        game_matrix[other_index, focal_index], game_matrix[other_index, other_index]]])
+    return (1.0 / (population_size - 1.0)) * (np.dot(sub_matrix, np.array(
+        [number_of_focal_individuals, population_size - number_of_focal_individuals])) - np.diagonal(sub_matrix))
 
 
 def stationary_distribution(transition_matrix_markov_chain):
@@ -185,9 +190,9 @@ def stationary_distribution(transition_matrix_markov_chain):
 
 def __auxiliary_l_k(index, game_matrix, size):
     suma = 0
-    for i in xrange(0, size):
+    for i in range(0, size):
         suma = suma + (game_matrix[index, index] + game_matrix[
-                       index, i] - game_matrix[i, index] - game_matrix[i, i])
+            index, i] - game_matrix[i, index] - game_matrix[i, i])
     return suma / size
 
 
@@ -229,7 +234,11 @@ def stationary_distribution_weak_selection(game_matrix, population_size, intensi
     """
 
     size = game_matrix.shape[0]
-    return [(1 + ((intensity_of_selection * population_size * (1 - mutation_probability)) * ((__auxiliary_l_k(index, game_matrix, size) + population_size * mutation_probability * __auxiliary_h_k(index, game_matrix, size)) / ((1 + population_size * mutation_probability) * (2 + population_size * mutation_probability))))) / size for index in xrange(0, size)]
+    return [(1 + ((intensity_of_selection * population_size * (1 - mutation_probability)) * ((__auxiliary_l_k(index,
+                                                                                                              game_matrix,
+                                                                                                              size) + population_size * mutation_probability * __auxiliary_h_k(
+        index, game_matrix, size)) / ((1 + population_size * mutation_probability) * (
+        2 + population_size * mutation_probability))))) / size for index in range(0, size)]
 
 
 def replicator_equation(x, t, game):
@@ -268,10 +277,11 @@ def replicator_trajectory(game_matrix, x_0, t_vector, **kwargs):
     """
     soln = odeint(replicator_equation, x_0,
                   t_vector, args=(game_matrix,), **kwargs)
-    return [soln[:, i] for i in xrange(len(game_matrix))]
+    return [soln[:, i] for i in range(len(game_matrix))]
 
 
-def replicator_equation_two_populations(x, t, game1, game2, number__of_strategies_population_1, number__of_strategies_population_2):
+def replicator_equation_two_populations(x, t, game1, game2, number__of_strategies_population_1,
+                                        number__of_strategies_population_2):
     """
     Parameters
     ----------
@@ -285,11 +295,11 @@ def replicator_equation_two_populations(x, t, game1, game2, number__of_strategie
     out: ndarray next state (concatenated from the two populations)
     """
 
-    #the first piece of y corresponds to population 1
+    # the first piece of y corresponds to population 1
     x_population_1 = x[0:number__of_strategies_population_1]
-    #the second piece of y corresponds to population 2
+    # the second piece of y corresponds to population 2
     x_population_2 = x[number__of_strategies_population_1:
-                       number__of_strategies_population_1 + number__of_strategies_population_2]
+    number__of_strategies_population_1 + number__of_strategies_population_2]
     # First Ay
     fitness_vector_1 = np.dot(game1, x_population_2)
     # and Bx (see equation above)
@@ -333,4 +343,4 @@ def replicator_trajectory_two_populations(game_matrix_1, game_matrix_2, x_0, y_0
     # solve
     soln = odeint(replicator_equation_two_populations, start, t_vector, args=(
         game_matrix_1, game_matrix_2, number__of_strategies_population_1, number__of_strategies_population_2), **kwargs)
-    return [soln[:, i] for i in xrange(number__of_strategies_population_1 + number__of_strategies_population_2)]
+    return [soln[:, i] for i in range(number__of_strategies_population_1 + number__of_strategies_population_2)]
