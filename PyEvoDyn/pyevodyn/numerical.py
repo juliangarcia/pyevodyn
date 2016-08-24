@@ -35,7 +35,7 @@ def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None,
     old signature: (game_matrix, population_size, intensity_of_selection, kernel=None, mutation_probability=None)
 
     """
-    if (mutation_kernel is None and mutation_probability is None):
+    if mutation_kernel is None and mutation_probability is None:
         raise ValueError(
             'Either a mutation kernel, or a mutation probability has to be specified')
     if game_matrix is not None:
@@ -45,7 +45,7 @@ def monomorphous_transition_matrix(intensity_of_selection, payoff_function=None,
     else:
         raise ValueError(
             "if specifying a payoff function the number_of_strategies has to be provided")
-    if (mutation_kernel is None and mutation_probability is not None):
+    if mutation_kernel is None and mutation_probability is not None:
         mutation_kernel = utils.uniform_mutation_kernel(
             mutation_probability, size)
     ans = np.zeros((size, size))
@@ -96,35 +96,34 @@ def fixation_probability(mutant_index, resident_index, intensity_of_selection, p
     for k in range(1, population_size):
         mult = []
         for j in range(1, k + 1):
-            if (payoff_function is not None and game_matrix is None):
-                if (number_of_strategies is None):
+            if payoff_function is not None and game_matrix is None:
+                if number_of_strategies is None:
                     raise ValueError(
                         'When using a custom payoff_function you must specify number_of_strategies.')
                 strategies = np.zeros(number_of_strategies, dtype=int)
                 strategies[mutant_index] = j
                 strategies[resident_index] = population_size - j
-                payoffMutant = payoff_function(
+                payoff_mutant = payoff_function(
                     mutant_index, population_composition=strategies, **kwargs)
-                payoffResident = payoff_function(
+                payoff_resident = payoff_function(
                     resident_index, population_composition=strategies, **kwargs)
-            elif (game_matrix is not None and payoff_function is None):
-                (payoffMutant, payoffResident) = payoff_from_matrix(
+            elif game_matrix is not None and payoff_function is None:
+                (payoff_mutant, payoff_resident) = payoff_from_matrix(
                     mutant_index, resident_index, game_matrix, j, population_size)
             else:
                 raise ValueError(
                     'No valid payoff structure given, please specify a game_matrix or a payoff_function.')
-            if (mapping == 'EXP'):
-                fitnessMutant = math.e ** (intensity_of_selection * payoffMutant)
-                fitnessResident = math.e ** (intensity_of_selection * payoffResident)
-            elif (mapping == 'LIN'):
-                fitnessMutant = 1.0 - intensity_of_selection + \
-                                intensity_of_selection * payoffMutant
-                fitnessResident = 1.0 - intensity_of_selection + \
-                                  intensity_of_selection * payoffResident
+            if mapping == 'EXP':
+                fitness_mutant = math.e ** (intensity_of_selection * payoff_mutant)
+                fitness_resident = math.e ** (intensity_of_selection * payoff_resident)
+            elif mapping == 'LIN':
+                fitness_mutant = 1.0 - intensity_of_selection + \
+                                 intensity_of_selection * payoff_mutant
+                fitness_resident = 1.0 - intensity_of_selection + intensity_of_selection * payoff_resident
             else:
                 raise ValueError(
                     'No valid mapping given. Use EXP or LIN for exponential and linear respectively.')
-            mult.append(fitnessResident / fitnessMutant)
+            mult.append(fitness_resident / fitness_mutant)
         suma.append(utils.kahan_product(mult))
     if any(np.isinf(suma)):
         return 0.0
